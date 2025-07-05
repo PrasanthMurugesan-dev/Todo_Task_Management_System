@@ -1,11 +1,11 @@
-
 import { useState, useEffect } from "react";
-import { Plus, Filter, Search, Bell, User, Calendar, BarChart3 } from "lucide-react";
+import { Plus, Filter, Search, Bell, User, Calendar, BarChart3, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Label } from "@/components/ui/label";
 import TaskList from "@/components/TaskList";
 import TaskForm from "@/components/TaskForm";
 import TaskFilters from "@/components/TaskFilters";
@@ -20,6 +20,8 @@ const Index = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
   const { toast } = useToast();
 
   // Sample data for demonstration
@@ -174,6 +176,16 @@ const Index = () => {
     applyFilters();
   }, [tasks, searchTerm, activeFilter]);
 
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: Implement login logic
+    console.log("Login attempt:", { loginEmail, loginPassword });
+    toast({
+      title: "Login attempted",
+      description: "Login functionality will be implemented with backend integration.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
@@ -185,7 +197,7 @@ const Index = () => {
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                   <BarChart3 className="w-5 h-5 text-white" />
                 </div>
-                <h1 className="text-xl font-bold text-slate-900">TaskFlow</h1>
+                <h1 className="text-xl font-bold text-slate-900">TaskStream</h1>
               </div>
             </div>
             
@@ -215,7 +227,7 @@ const Index = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="space-y-6">
@@ -276,6 +288,73 @@ const Index = () => {
                 onStatusChange={handleStatusChange}
               />
             </div>
+          </div>
+
+          {/* Right Side Login Panel */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-24">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900">Sign In</CardTitle>
+                <p className="text-sm text-slate-600">Access your account</p>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="login-email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                      <Input
+                        id="login-email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                      <Input
+                        id="login-password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    Sign In
+                  </Button>
+                </form>
+
+                <div className="mt-4 text-center">
+                  <Button variant="link" className="text-sm text-slate-600 p-0">
+                    Forgot password?
+                  </Button>
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-slate-200">
+                  <p className="text-xs text-slate-500 text-center">
+                    Don't have an account?{" "}
+                    <Button variant="link" className="text-xs p-0 h-auto font-medium text-blue-600">
+                      Sign up
+                    </Button>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
