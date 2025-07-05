@@ -1,45 +1,46 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Github, Chrome, BarChart3, User, Mail, Lock, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
-import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Github, Mail, Chrome, BarChart3, Loader2, Lock } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-
-const loginSchema = z.object({
+const signupSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
-type LoginForm = z.infer<typeof loginSchema>;
+type SignupForm = z.infer<typeof signupSchema>;
 
-const Login = () => {
+const Signup: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { login, loginWithProvider } = useAuth();
+  const { signup, loginWithProvider } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const from = location.state?.from?.pathname || "/";
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<SignupForm>({
+    resolver: zodResolver(signupSchema),
   });
 
-  const onSubmit = async (data: LoginForm) => {
+  const onSubmit = async (data: SignupForm) => {
     setIsLoading(true);
     try {
-      await login(data);
-      navigate(from, { replace: true });
+      await signup(data);
+      navigate('/');
     } catch (error) {
       // Error is handled by the auth context
     } finally {
@@ -51,7 +52,7 @@ const Login = () => {
     setIsLoading(true);
     try {
       await loginWithProvider(provider);
-      navigate(from, { replace: true });
+      navigate('/');
     } catch (error) {
       // Error is handled by the auth context
     } finally {
@@ -69,8 +70,8 @@ const Login = () => {
             </div>
             <h1 className="text-xl font-bold text-slate-900">TaskFlow</h1>
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <p className="text-slate-600">Sign in to manage your tasks</p>
+          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+          <p className="text-slate-600">Join us to start managing your tasks</p>
         </CardHeader>
         
         <CardContent className="space-y-6">
@@ -79,7 +80,7 @@ const Login = () => {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => handleSocialLogin("google")}
+              onClick={() => handleSocialLogin('google')}
               disabled={isLoading}
             >
               <Chrome className="w-4 h-4 mr-2" />
@@ -89,7 +90,7 @@ const Login = () => {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => handleSocialLogin("github")}
+              onClick={() => handleSocialLogin('github')}
               disabled={isLoading}
             >
               <Github className="w-4 h-4 mr-2" />
@@ -106,8 +107,24 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Email Login Form */}
+          {/* Signup Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <Input
+                  id="name"
+                  placeholder="Enter your full name"
+                  className="pl-10"
+                  {...register('name')}
+                />
+              </div>
+              {errors.name && (
+                <p className="text-sm text-red-500">{errors.name.message}</p>
+              )}
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -132,13 +149,30 @@ const Login = () => {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder="Create a password"
                   className="pl-10"
                   {...register('password')}
                 />
               </div>
               {errors.password && (
                 <p className="text-sm text-red-500">{errors.password.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Confirm your password"
+                  className="pl-10"
+                  {...register('confirmPassword')}
+                />
+              </div>
+              {errors.confirmPassword && (
+                <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
               )}
             </div>
 
@@ -150,21 +184,21 @@ const Login = () => {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Signing In...
+                  Creating Account...
                 </>
               ) : (
                 <>
-                  <Mail className="w-4 h-4 mr-2" />
-                  Sign In
+                  <User className="w-4 h-4 mr-2" />
+                  Create Account
                 </>
               )}
             </Button>
           </form>
 
           <div className="text-center text-sm">
-            <span className="text-slate-600">Don't have an account? </span>
-            <Link to="/signup" className="text-blue-600 hover:underline font-medium">
-              Sign up
+            <span className="text-slate-600">Already have an account? </span>
+            <Link to="/login" className="text-blue-600 hover:underline font-medium">
+              Sign in
             </Link>
           </div>
         </CardContent>
@@ -173,4 +207,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;
